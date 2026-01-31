@@ -1,0 +1,594 @@
+{
+  "metadata": {
+    "document_id": "TS-2024-001",
+    "title": "ユーザー認証機能 テスト仕様書",
+    "version": "1.0.0",
+    "status": "approved",
+    "created_date": "2024-02-05",
+    "last_updated": "2024-02-10",
+    "author": "QA Lead",
+    "related_srs": "SRS-2024-001",
+    "related_prd": "PRD-2024-001",
+    "reviewers": ["Tech Lead", "Senior Developer"],
+    "approvers": ["QA Manager"]
+  },
+  "test_plan": {
+    "identifier": "MTP-2024-001",
+    "introduction": {
+      "purpose": "本テスト計画は、AuthServiceの品質保証を目的とし、機能テスト、性能テスト、セキュリティテストの戦略と計画を定義します。IEEE 829規格に準拠しています。",
+      "scope": "ユーザー認証機能（登録、ログイン、パスワードリセット）の全体テスト。単体テスト、統合テスト、E2Eテストを含みます。",
+      "objectives": [
+        "機能要件（SRS-FR-001〜SRS-FR-005）の100%カバレッジ",
+        "非機能要件（性能、セキュリティ）の検証",
+        "リグレッションの防止",
+        "品質基準（バグ0、カバレッジ80%以上）の達成"
+      ],
+      "references": [
+        {"id": "REF-001", "title": "SRS-2024-001", "version": "1.0.0"},
+        {"id": "REF-002", "title": "PRD-2024-001", "version": "1.0.0"}
+      ]
+    },
+    "test_items": [
+      {
+        "id": "TI-001",
+        "name": "AuthService API",
+        "version": "1.0.0",
+        "description": "認証サービスのREST API",
+        "source_location": "src/auth/"
+      },
+      {
+        "id": "TI-002",
+        "name": "Password Validator",
+        "version": "1.0.0",
+        "description": "パスワードバリデーションモジュール",
+        "source_location": "src/validators/"
+      }
+    ],
+    "features_to_be_tested": [
+      {
+        "id": "FT-001",
+        "name": "ユーザー登録",
+        "description": "メールアドレスとパスワードによる新規登録",
+        "srs_reference": "SRS-FR-001",
+        "priority": "critical"
+      },
+      {
+        "id": "FT-002",
+        "name": "パスワードバリデーション",
+        "description": "パスワード強度の検証",
+        "srs_reference": "SRS-FR-002",
+        "priority": "critical"
+      },
+      {
+        "id": "FT-003",
+        "name": "ユーザーログイン",
+        "description": "認証とJWTトークン発行",
+        "srs_reference": "SRS-FR-003",
+        "priority": "critical"
+      },
+      {
+        "id": "FT-004",
+        "name": "ログインエラー処理",
+        "description": "認証失敗時のエラーメッセージ",
+        "srs_reference": "SRS-FR-004",
+        "priority": "high"
+      },
+      {
+        "id": "FT-005",
+        "name": "パスワードリセット",
+        "description": "パスワードリセットメール送信",
+        "srs_reference": "SRS-FR-005",
+        "priority": "medium"
+      }
+    ],
+    "features_not_to_be_tested": [
+      {
+        "name": "OAuth連携",
+        "reason": "次期リリースでの実装予定"
+      },
+      {
+        "name": "二要素認証",
+        "reason": "次期リリースでの実装予定"
+      }
+    ],
+    "approach": {
+      "strategy": "リスクベーステスト戦略を採用します。クリティカルな機能（登録、ログイン）から優先的にテストし、TDDアプローチで開発と並行してテストを作成します。自動化率80%を目標とします。",
+      "test_levels": ["unit", "integration", "system"],
+      "test_types": ["functional", "performance", "security"],
+      "tools": [
+        {"name": "pytest", "purpose": "単体テスト・統合テスト", "version": "7.x"},
+        {"name": "pytest-cov", "purpose": "カバレッジ計測", "version": "4.x"},
+        {"name": "locust", "purpose": "性能テスト", "version": "2.x"},
+        {"name": "bandit", "purpose": "セキュリティスキャン", "version": "1.x"}
+      ],
+      "automation_scope": {
+        "automated": ["単体テスト", "API統合テスト", "セキュリティスキャン"],
+        "manual": ["探索的テスト", "ユーザビリティテスト"],
+        "automation_percentage_target": 80
+      }
+    },
+    "pass_fail_criteria": {
+      "overall_criteria": [
+        {"criterion": "テストケース通過率", "threshold": "100%", "mandatory": true},
+        {"criterion": "Critical/Highバグ", "threshold": "0件", "mandatory": true},
+        {"criterion": "コードカバレッジ", "threshold": "80%以上", "mandatory": true},
+        {"criterion": "性能基準", "threshold": "200ms以下", "mandatory": true}
+      ],
+      "exit_criteria": [
+        "全Criticalテストケースが通過",
+        "未解決のCritical/Highバグが0件",
+        "性能テストで全基準を満たす",
+        "セキュリティスキャンでCritical検出0件"
+      ],
+      "suspension_criteria": [
+        "ビルドが失敗した場合",
+        "テスト環境が利用不可の場合",
+        "Critical/Blockerバグが3件以上検出された場合"
+      ],
+      "resumption_criteria": [
+        "ビルドが成功",
+        "テスト環境が復旧",
+        "Critical/Blockerバグが修正済み"
+      ]
+    },
+    "deliverables": [
+      {"name": "テスト計画書", "description": "本ドキュメント", "format": "JSON/Markdown"},
+      {"name": "テストケース一覧", "description": "全テストケースの詳細", "format": "JSON"},
+      {"name": "テスト結果レポート", "description": "テスト実行結果のサマリー", "format": "HTML/PDF"},
+      {"name": "カバレッジレポート", "description": "コードカバレッジ詳細", "format": "HTML"},
+      {"name": "バグレポート", "description": "検出されたバグの一覧", "format": "Issue Tracker"}
+    ],
+    "environment": {
+      "hardware": [
+        {"name": "テストサーバー", "specification": "4 vCPU, 8GB RAM", "quantity": 2}
+      ],
+      "software": [
+        {"name": "Python", "version": "3.11", "purpose": "テスト実行環境"},
+        {"name": "PostgreSQL", "version": "15", "purpose": "テストデータベース"},
+        {"name": "Redis", "version": "7", "purpose": "テストキャッシュ"}
+      ],
+      "test_data": {
+        "description": "テスト用のユーザーデータ、メールアドレス、パスワード",
+        "source": "テストフィクスチャ",
+        "preparation_method": "pytestフィクスチャで自動生成"
+      }
+    },
+    "responsibilities": [
+      {
+        "role": "QA Lead",
+        "name": "QA担当者",
+        "responsibilities": ["テスト計画策定", "テスト進捗管理", "品質レポート作成"]
+      },
+      {
+        "role": "Test Engineer",
+        "name": "テストエンジニア",
+        "responsibilities": ["テストケース作成", "テスト実行", "バグ報告"]
+      },
+      {
+        "role": "Developer",
+        "name": "開発者",
+        "responsibilities": ["単体テスト作成", "バグ修正"]
+      }
+    ],
+    "schedule": {
+      "start_date": "2024-02-05",
+      "end_date": "2024-03-25",
+      "milestones": [
+        {
+          "name": "テスト計画完了",
+          "date": "2024-02-10",
+          "deliverables": ["テスト計画書"]
+        },
+        {
+          "name": "単体テスト完了",
+          "date": "2024-03-01",
+          "deliverables": ["単体テストレポート", "カバレッジレポート"]
+        },
+        {
+          "name": "統合テスト完了",
+          "date": "2024-03-15",
+          "deliverables": ["統合テストレポート"]
+        },
+        {
+          "name": "全テスト完了",
+          "date": "2024-03-25",
+          "deliverables": ["最終テストレポート", "品質サマリー"]
+        }
+      ]
+    },
+    "risks": [
+      {
+        "id": "TR-001",
+        "description": "テスト環境の準備が遅れる可能性",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": "早期に環境構築を開始、Dockerでの環境構築を準備",
+        "contingency": "ローカル環境でのテストを実施"
+      },
+      {
+        "id": "TR-002",
+        "description": "重大なバグにより再テストが必要になる可能性",
+        "probability": "low",
+        "impact": "high",
+        "mitigation": "TDDアプローチでバグを早期発見",
+        "contingency": "スケジュールに予備日を確保"
+      }
+    ]
+  },
+  "test_design_specifications": [
+    {
+      "id": "TDS-001",
+      "feature": "ユーザー登録",
+      "srs_references": ["SRS-FR-001", "SRS-FR-002"],
+      "approach": "同値分割と境界値分析を使用。正常系（有効なメール・パスワード）、異常系（無効な入力、重複メール）、境界値（パスワード長）のテストケースを作成。",
+      "test_techniques": ["equivalence_partitioning", "boundary_value_analysis"],
+      "pass_criteria": "全テストケースが期待結果と一致",
+      "test_case_ids": ["TC-0001", "TC-0002", "TC-0003", "TC-0010", "TC-0011"]
+    },
+    {
+      "id": "TDS-002",
+      "feature": "ユーザーログイン",
+      "srs_references": ["SRS-FR-003", "SRS-FR-004"],
+      "approach": "正常系（正しい認証情報）、異常系（誤った認証情報、未登録ユーザー）、セキュリティ（アカウントロック）のテストケースを作成。",
+      "test_techniques": ["equivalence_partitioning", "error_guessing"],
+      "pass_criteria": "全テストケースが期待結果と一致",
+      "test_case_ids": ["TC-0020", "TC-0021", "TC-0022", "TC-0023"]
+    },
+    {
+      "id": "TDS-003",
+      "feature": "パスワードリセット",
+      "srs_references": ["SRS-FR-005"],
+      "approach": "正常系（登録済みメール）、異常系（未登録メール）のテストケースを作成。セキュリティ考慮でメール存在有無を露出しないことを確認。",
+      "test_techniques": ["equivalence_partitioning", "use_case"],
+      "pass_criteria": "全テストケースが期待結果と一致",
+      "test_case_ids": ["TC-0030", "TC-0031"]
+    }
+  ],
+  "test_cases": [
+    {
+      "id": "TC-0001",
+      "title": "正常なメールアドレスとパスワードでユーザー登録が成功する",
+      "objective": "有効な入力データでユーザー登録APIが正常に動作することを検証する",
+      "srs_reference": "SRS-FR-001",
+      "test_design_reference": "TDS-001",
+      "priority": "critical",
+      "test_type": "positive",
+      "automation_status": "automated",
+      "preconditions": [
+        "テスト用DBが初期化されている",
+        "メールサービスがモック化されている",
+        "test@example.comが未登録である"
+      ],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "test@example.com", "description": "有効なメールアドレス"},
+          {"name": "password", "value": "SecurePass123!", "description": "有効なパスワード（8文字以上、英大小文字・数字を含む）"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/register を呼び出す", "input": "{\"email\": \"test@example.com\", \"password\": \"SecurePass123!\"}"},
+        {"step_number": 2, "action": "レスポンスステータスを確認", "expected_result": "201 Created"},
+        {"step_number": 3, "action": "レスポンスボディを確認", "expected_result": "user_id (UUID形式) が含まれる"},
+        {"step_number": 4, "action": "DBにユーザーが作成されたことを確認", "expected_result": "ユーザーレコードが存在"}
+      ],
+      "expected_results": [
+        "HTTPステータス 201 が返される",
+        "レスポンスに user_id (UUID形式) が含まれる",
+        "DBにユーザーレコードが作成される",
+        "パスワードがハッシュ化されて保存される"
+      ],
+      "postconditions": ["ユーザーレコードがDBに存在する"],
+      "cleanup": ["作成したテストユーザーを削除"]
+    },
+    {
+      "id": "TC-0002",
+      "title": "既に登録済みのメールアドレスで登録するとエラーになる",
+      "objective": "重複メールアドレスでの登録が拒否されることを検証する",
+      "srs_reference": "SRS-FR-001",
+      "test_design_reference": "TDS-001",
+      "priority": "high",
+      "test_type": "negative",
+      "automation_status": "automated",
+      "preconditions": [
+        "existing@example.comが既に登録済みである"
+      ],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "existing@example.com", "description": "既存のメールアドレス"},
+          {"name": "password", "value": "SecurePass123!"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/register を呼び出す"},
+        {"step_number": 2, "action": "レスポンスステータスを確認", "expected_result": "409 Conflict"}
+      ],
+      "expected_results": [
+        "HTTPステータス 409 が返される",
+        "エラーメッセージが返される"
+      ]
+    },
+    {
+      "id": "TC-0003",
+      "title": "無効なメール形式で登録するとエラーになる",
+      "objective": "無効なメールアドレスでバリデーションエラーが発生することを検証する",
+      "srs_reference": "SRS-FR-001",
+      "test_design_reference": "TDS-001",
+      "priority": "high",
+      "test_type": "negative",
+      "automation_status": "automated",
+      "preconditions": ["テスト用DBが初期化されている"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "invalid-email", "description": "無効なメール形式"},
+          {"name": "password", "value": "SecurePass123!"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/register を呼び出す"},
+        {"step_number": 2, "action": "レスポンスステータスを確認", "expected_result": "400 Bad Request"}
+      ],
+      "expected_results": [
+        "HTTPステータス 400 が返される",
+        "エラーメッセージに'email'が含まれる"
+      ]
+    },
+    {
+      "id": "TC-0010",
+      "title": "パスワードが8文字未満でエラーになる",
+      "objective": "短いパスワードでバリデーションエラーが発生することを検証する",
+      "srs_reference": "SRS-FR-002",
+      "test_design_reference": "TDS-001",
+      "priority": "high",
+      "test_type": "boundary",
+      "automation_status": "automated",
+      "preconditions": ["テスト用DBが初期化されている"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "test@example.com"},
+          {"name": "password", "value": "Short1!", "description": "7文字（境界値-1）"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/register を呼び出す"},
+        {"step_number": 2, "action": "レスポンスを確認", "expected_result": "400 Bad Request"}
+      ],
+      "expected_results": [
+        "HTTPステータス 400 が返される",
+        "エラーメッセージにパスワード長の制約が含まれる"
+      ]
+    },
+    {
+      "id": "TC-0011",
+      "title": "パスワードが8文字でちょうど登録できる",
+      "objective": "境界値（8文字）のパスワードで登録が成功することを検証する",
+      "srs_reference": "SRS-FR-002",
+      "test_design_reference": "TDS-001",
+      "priority": "high",
+      "test_type": "boundary",
+      "automation_status": "automated",
+      "preconditions": ["テスト用DBが初期化されている"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "boundary@example.com"},
+          {"name": "password", "value": "Secure1!", "description": "8文字（境界値）"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/register を呼び出す"},
+        {"step_number": 2, "action": "レスポンスを確認", "expected_result": "201 Created"}
+      ],
+      "expected_results": ["HTTPステータス 201 が返される"]
+    },
+    {
+      "id": "TC-0020",
+      "title": "正しい認証情報でログインが成功する",
+      "objective": "有効な認証情報でログインが成功し、JWTが発行されることを検証する",
+      "srs_reference": "SRS-FR-003",
+      "test_design_reference": "TDS-002",
+      "priority": "critical",
+      "test_type": "positive",
+      "automation_status": "automated",
+      "preconditions": ["user@example.com/Password123!で登録済み"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "user@example.com"},
+          {"name": "password", "value": "Password123!"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/login を呼び出す"},
+        {"step_number": 2, "action": "レスポンスステータスを確認", "expected_result": "200 OK"},
+        {"step_number": 3, "action": "レスポンスボディを確認", "expected_result": "access_token, refresh_token, expires_in が含まれる"}
+      ],
+      "expected_results": [
+        "HTTPステータス 200 が返される",
+        "access_token (JWT形式) が返される",
+        "refresh_token が返される",
+        "expires_in が返される"
+      ]
+    },
+    {
+      "id": "TC-0021",
+      "title": "間違ったパスワードでログインが失敗する",
+      "objective": "誤ったパスワードでログインが拒否されることを検証する",
+      "srs_reference": "SRS-FR-004",
+      "test_design_reference": "TDS-002",
+      "priority": "high",
+      "test_type": "negative",
+      "automation_status": "automated",
+      "preconditions": ["user@example.com/Password123!で登録済み"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "user@example.com"},
+          {"name": "password", "value": "WrongPassword!"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/login を呼び出す"},
+        {"step_number": 2, "action": "レスポンスを確認", "expected_result": "401 Unauthorized"}
+      ],
+      "expected_results": [
+        "HTTPステータス 401 が返される",
+        "汎用エラーメッセージが返される（パスワード間違いを明示しない）"
+      ]
+    },
+    {
+      "id": "TC-0022",
+      "title": "未登録メールアドレスでログインが失敗する",
+      "objective": "未登録のメールアドレスでログインが拒否されることを検証する",
+      "srs_reference": "SRS-FR-004",
+      "test_design_reference": "TDS-002",
+      "priority": "high",
+      "test_type": "negative",
+      "automation_status": "automated",
+      "preconditions": ["nonexistent@example.comが未登録である"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "nonexistent@example.com"},
+          {"name": "password", "value": "Password123!"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/login を呼び出す"},
+        {"step_number": 2, "action": "レスポンスを確認", "expected_result": "401 Unauthorized"}
+      ],
+      "expected_results": [
+        "HTTPステータス 401 が返される",
+        "TC-0021と同じエラーメッセージが返される（メール存在を明示しない）"
+      ]
+    },
+    {
+      "id": "TC-0023",
+      "title": "5回連続でログイン失敗するとアカウントがロックされる",
+      "objective": "ブルートフォース対策のアカウントロック機能を検証する",
+      "srs_reference": "SRS-NFR-005",
+      "test_design_reference": "TDS-002",
+      "priority": "high",
+      "test_type": "security",
+      "automation_status": "automated",
+      "preconditions": ["user@example.com/Password123!で登録済み"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "user@example.com"},
+          {"name": "password", "value": "WrongPassword!"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "間違ったパスワードで5回連続ログイン試行"},
+        {"step_number": 2, "action": "6回目のログイン試行（正しいパスワード）", "expected_result": "403 Forbidden"}
+      ],
+      "expected_results": [
+        "6回目のログインで403が返される",
+        "アカウントロックのエラーメッセージが返される",
+        "15分後にロックが解除される"
+      ]
+    },
+    {
+      "id": "TC-0030",
+      "title": "登録済みメールアドレスでパスワードリセットが成功する",
+      "objective": "パスワードリセットメールが送信されることを検証する",
+      "srs_reference": "SRS-FR-005",
+      "test_design_reference": "TDS-003",
+      "priority": "medium",
+      "test_type": "positive",
+      "automation_status": "automated",
+      "preconditions": ["user@example.comが登録済み", "メールサービスがモック化されている"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "user@example.com"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/password-reset を呼び出す"},
+        {"step_number": 2, "action": "レスポンスを確認", "expected_result": "200 OK"},
+        {"step_number": 3, "action": "メール送信を確認", "expected_result": "リセットリンク付きメールが送信される"}
+      ],
+      "expected_results": [
+        "HTTPステータス 200 が返される",
+        "成功メッセージが返される",
+        "メールが送信される"
+      ]
+    },
+    {
+      "id": "TC-0031",
+      "title": "未登録メールアドレスでもパスワードリセット成功レスポンスが返る",
+      "objective": "セキュリティ上、メールアドレスの存在有無を露出しないことを検証する",
+      "srs_reference": "SRS-FR-005",
+      "test_design_reference": "TDS-003",
+      "priority": "high",
+      "test_type": "security",
+      "automation_status": "automated",
+      "preconditions": ["nonexistent@example.comが未登録"],
+      "test_data": {
+        "inputs": [
+          {"name": "email", "value": "nonexistent@example.com"}
+        ]
+      },
+      "test_steps": [
+        {"step_number": 1, "action": "POST /api/auth/password-reset を呼び出す"},
+        {"step_number": 2, "action": "レスポンスを確認", "expected_result": "200 OK（TC-0030と同じ）"}
+      ],
+      "expected_results": [
+        "HTTPステータス 200 が返される",
+        "TC-0030と同じ成功メッセージが返される",
+        "メールは送信されない"
+      ]
+    }
+  ],
+  "test_procedures": [
+    {
+      "id": "TP-001",
+      "purpose": "ユーザー登録機能の手動テスト手順",
+      "test_case_ids": ["TC-0001"],
+      "special_requirements": ["テスト環境へのアクセス権限"],
+      "setup": [
+        "テスト環境にログイン",
+        "DBを初期状態にリセット"
+      ],
+      "steps": [
+        {"step_number": 1, "action": "ブラウザで /register を開く", "expected_result": "登録フォームが表示される"},
+        {"step_number": 2, "action": "メールアドレスを入力", "input_data": "test@example.com", "expected_result": "入力が受け付けられる"},
+        {"step_number": 3, "action": "パスワードを入力", "input_data": "SecurePass123!", "expected_result": "入力がマスクされて表示"},
+        {"step_number": 4, "action": "登録ボタンをクリック", "expected_result": "成功メッセージが表示される"}
+      ],
+      "teardown": ["テストデータを削除"]
+    }
+  ],
+  "traceability_matrix": [
+    {
+      "requirement_id": "SRS-FR-001",
+      "prd_requirement_id": "FR-001",
+      "test_case_ids": ["TC-0001", "TC-0002", "TC-0003"],
+      "coverage_status": "fully_covered"
+    },
+    {
+      "requirement_id": "SRS-FR-002",
+      "prd_requirement_id": "FR-002",
+      "test_case_ids": ["TC-0010", "TC-0011"],
+      "coverage_status": "fully_covered"
+    },
+    {
+      "requirement_id": "SRS-FR-003",
+      "prd_requirement_id": "FR-003",
+      "test_case_ids": ["TC-0020"],
+      "coverage_status": "fully_covered"
+    },
+    {
+      "requirement_id": "SRS-FR-004",
+      "prd_requirement_id": "FR-004",
+      "test_case_ids": ["TC-0021", "TC-0022"],
+      "coverage_status": "fully_covered"
+    },
+    {
+      "requirement_id": "SRS-FR-005",
+      "prd_requirement_id": "FR-005",
+      "test_case_ids": ["TC-0030", "TC-0031"],
+      "coverage_status": "fully_covered"
+    },
+    {
+      "requirement_id": "SRS-NFR-005",
+      "test_case_ids": ["TC-0023"],
+      "coverage_status": "fully_covered"
+    }
+  ]
+}

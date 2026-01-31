@@ -1,0 +1,89 @@
+# Pre-commit configuration
+# Install: pip install pre-commit && pre-commit install
+
+repos:
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Python hooks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      # Linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      # Formatter
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: []
+        args: [--ignore-missing-imports]
+
+  # Security
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        args: ['-ll', '--skip', 'B101']
+        exclude: tests/
+
+  # Secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json
+
+  # JSON Schema validation for specifications
+  - repo: local
+    hooks:
+      - id: validate-prd
+        name: Validate PRD Schema
+        entry: python scripts/validate-documents.py --prd
+        language: python
+        files: docs/prd\.json$
+        additional_dependencies: [jsonschema]
+        pass_filenames: true
+
+      - id: validate-srs
+        name: Validate SRS Schema
+        entry: python scripts/validate-documents.py --srs
+        language: python
+        files: docs/srs\.json$
+        additional_dependencies: [jsonschema]
+        pass_filenames: true
+
+      - id: validate-test-spec
+        name: Validate Test Spec Schema
+        entry: python scripts/validate-documents.py --test
+        language: python
+        files: docs/test-spec\.json$
+        additional_dependencies: [jsonschema]
+        pass_filenames: true
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
