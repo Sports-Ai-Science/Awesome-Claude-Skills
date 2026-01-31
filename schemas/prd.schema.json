@@ -1,0 +1,469 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awesome-claude-skills/schemas/prd.schema.json",
+  "title": "Product Requirements Document (PRD)",
+  "description": "プロダクト要求仕様書のスキーマ定義",
+  "type": "object",
+  "required": [
+    "metadata",
+    "executive_summary",
+    "problem_statement",
+    "goals",
+    "user_personas",
+    "requirements",
+    "success_metrics",
+    "timeline"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "ドキュメントメタデータ",
+      "required": ["document_id", "title", "version", "status", "created_date", "author"],
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^PRD-[0-9]{4}-[0-9]{3}$",
+          "description": "ドキュメントID (例: PRD-2024-001)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200,
+          "description": "プロダクト/機能名"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "バージョン (SemVer形式)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review", "approved", "deprecated"],
+          "description": "ドキュメントステータス"
+        },
+        "created_date": {
+          "type": "string",
+          "format": "date",
+          "description": "作成日"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "最終更新日"
+        },
+        "author": {
+          "type": "string",
+          "description": "作成者"
+        },
+        "reviewers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "レビュアー"
+        },
+        "approvers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "承認者"
+        }
+      }
+    },
+    "executive_summary": {
+      "type": "object",
+      "description": "エグゼクティブサマリー",
+      "required": ["overview", "value_proposition"],
+      "properties": {
+        "overview": {
+          "type": "string",
+          "minLength": 50,
+          "description": "プロダクト概要"
+        },
+        "value_proposition": {
+          "type": "string",
+          "minLength": 20,
+          "description": "価値提案"
+        },
+        "target_release": {
+          "type": "string",
+          "description": "目標リリース時期"
+        }
+      }
+    },
+    "problem_statement": {
+      "type": "object",
+      "description": "課題定義",
+      "required": ["current_situation", "problems", "impact"],
+      "properties": {
+        "current_situation": {
+          "type": "string",
+          "minLength": 50,
+          "description": "現状"
+        },
+        "problems": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "severity"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "severity": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low"]
+              },
+              "affected_users": { "type": "string" }
+            }
+          },
+          "description": "解決すべき課題リスト"
+        },
+        "impact": {
+          "type": "string",
+          "description": "課題が解決されない場合の影響"
+        }
+      }
+    },
+    "goals": {
+      "type": "object",
+      "description": "目標定義",
+      "required": ["business_goals", "product_goals"],
+      "properties": {
+        "business_goals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "metric"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "metric": { "type": "string" },
+              "target": { "type": "string" }
+            }
+          },
+          "description": "ビジネス目標"
+        },
+        "product_goals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "description"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "priority": {
+                "type": "string",
+                "enum": ["must-have", "should-have", "nice-to-have"]
+              }
+            }
+          },
+          "description": "プロダクト目標"
+        },
+        "non_goals": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "スコープ外"
+        }
+      }
+    },
+    "user_personas": {
+      "type": "array",
+      "minItems": 1,
+      "description": "ユーザーペルソナ",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "goals", "pain_points"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "demographics": {
+            "type": "object",
+            "properties": {
+              "age_range": { "type": "string" },
+              "occupation": { "type": "string" },
+              "tech_savviness": {
+                "type": "string",
+                "enum": ["beginner", "intermediate", "advanced"]
+              }
+            }
+          },
+          "goals": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "pain_points": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "scenarios": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "description": "要件定義",
+      "required": ["functional"],
+      "properties": {
+        "functional": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/requirement"
+          },
+          "description": "機能要件"
+        },
+        "non_functional": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/requirement"
+          },
+          "description": "非機能要件"
+        }
+      }
+    },
+    "user_stories": {
+      "type": "array",
+      "description": "ユーザーストーリー",
+      "items": {
+        "type": "object",
+        "required": ["id", "persona", "want", "so_that", "acceptance_criteria"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^US-[0-9]{3}$"
+          },
+          "persona": { "type": "string" },
+          "want": { "type": "string" },
+          "so_that": { "type": "string" },
+          "acceptance_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["given", "when", "then"],
+              "properties": {
+                "given": { "type": "string" },
+                "when": { "type": "string" },
+                "then": { "type": "string" }
+              }
+            }
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["must-have", "should-have", "nice-to-have"]
+          },
+          "story_points": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 21
+          },
+          "related_requirements": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "success_metrics": {
+      "type": "object",
+      "description": "成功指標",
+      "required": ["kpis"],
+      "properties": {
+        "kpis": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "description", "target", "measurement_method"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "baseline": { "type": "string" },
+              "target": { "type": "string" },
+              "measurement_method": { "type": "string" },
+              "frequency": { "type": "string" }
+            }
+          }
+        },
+        "okrs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["objective", "key_results"],
+            "properties": {
+              "objective": { "type": "string" },
+              "key_results": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "description": "タイムライン",
+      "required": ["milestones"],
+      "properties": {
+        "milestones": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "target_date", "deliverables"],
+            "properties": {
+              "name": { "type": "string" },
+              "target_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "deliverables": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              "dependencies": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "start_date", "end_date"],
+            "properties": {
+              "name": { "type": "string" },
+              "start_date": { "type": "string", "format": "date" },
+              "end_date": { "type": "string", "format": "date" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "description": "リスク分析",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "probability", "impact", "mitigation"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "probability": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "mitigation": { "type": "string" },
+          "owner": { "type": "string" }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "依存関係",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["technical", "team", "external", "resource"]
+          },
+          "owner": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "resolved", "blocked"]
+          }
+        }
+      }
+    },
+    "appendix": {
+      "type": "object",
+      "description": "付録",
+      "properties": {
+        "references": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "glossary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["term", "definition"],
+            "properties": {
+              "term": { "type": "string" },
+              "definition": { "type": "string" }
+            }
+          }
+        },
+        "revision_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["version", "date", "author", "changes"],
+            "properties": {
+              "version": { "type": "string" },
+              "date": { "type": "string", "format": "date" },
+              "author": { "type": "string" },
+              "changes": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "required": ["id", "description", "priority", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(FR|NFR)-[0-9]{3}$",
+          "description": "要件ID (FR: 機能要件, NFR: 非機能要件)"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["must-have", "should-have", "nice-to-have"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["proposed", "approved", "implemented", "verified", "deferred"]
+        },
+        "rationale": { "type": "string" },
+        "source": { "type": "string" },
+        "verification_method": {
+          "type": "string",
+          "enum": ["test", "inspection", "demonstration", "analysis"]
+        },
+        "related_user_stories": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

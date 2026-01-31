@@ -1,0 +1,661 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awesome-claude-skills/schemas/test-spec-ieee829.schema.json",
+  "title": "Test Specification (IEEE 829)",
+  "description": "IEEE 829準拠のテスト仕様書スキーマ（Master Test Plan, Test Design, Test Case, Test Procedure）",
+  "type": "object",
+  "required": [
+    "metadata",
+    "test_plan",
+    "test_design_specifications",
+    "test_cases"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "ドキュメントメタデータ",
+      "required": ["document_id", "title", "version", "status", "created_date", "author"],
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^TS-[0-9]{4}-[0-9]{3}$",
+          "description": "ドキュメントID (例: TS-2024-001)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review", "approved", "in_execution", "completed", "deprecated"]
+        },
+        "created_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date"
+        },
+        "author": { "type": "string" },
+        "related_srs": {
+          "type": "string",
+          "description": "関連するSRSのID"
+        },
+        "related_prd": {
+          "type": "string",
+          "description": "関連するPRDのID"
+        },
+        "reviewers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approvers": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "test_plan": {
+      "type": "object",
+      "description": "Master Test Plan (IEEE 829 Section 1)",
+      "required": [
+        "identifier",
+        "introduction",
+        "test_items",
+        "features_to_be_tested",
+        "approach",
+        "pass_fail_criteria",
+        "deliverables",
+        "schedule"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "pattern": "^MTP-[0-9]{4}-[0-9]{3}$",
+          "description": "テスト計画ID"
+        },
+        "introduction": {
+          "type": "object",
+          "required": ["purpose", "scope", "objectives"],
+          "properties": {
+            "purpose": {
+              "type": "string",
+              "minLength": 50
+            },
+            "scope": {
+              "type": "string",
+              "minLength": 50
+            },
+            "objectives": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string" }
+            },
+            "references": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "title": { "type": "string" },
+                  "version": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "test_items": {
+          "type": "array",
+          "description": "テスト対象",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "version"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "version": { "type": "string" },
+              "description": { "type": "string" },
+              "source_location": { "type": "string" }
+            }
+          }
+        },
+        "features_to_be_tested": {
+          "type": "array",
+          "description": "テスト対象機能",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "srs_reference"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "srs_reference": {
+                "type": "string",
+                "description": "SRS要件ID"
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low"]
+              }
+            }
+          }
+        },
+        "features_not_to_be_tested": {
+          "type": "array",
+          "description": "テスト対象外機能",
+          "items": {
+            "type": "object",
+            "required": ["name", "reason"],
+            "properties": {
+              "name": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        },
+        "approach": {
+          "type": "object",
+          "description": "テストアプローチ",
+          "required": ["strategy", "test_levels", "test_types"],
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "minLength": 100
+            },
+            "test_levels": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["unit", "integration", "system", "acceptance"]
+              },
+              "minItems": 1
+            },
+            "test_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "functional",
+                  "performance",
+                  "security",
+                  "usability",
+                  "compatibility",
+                  "reliability",
+                  "regression"
+                ]
+              },
+              "minItems": 1
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "purpose": { "type": "string" },
+                  "version": { "type": "string" }
+                }
+              }
+            },
+            "automation_scope": {
+              "type": "object",
+              "properties": {
+                "automated": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "manual": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "automation_percentage_target": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            }
+          }
+        },
+        "pass_fail_criteria": {
+          "type": "object",
+          "description": "合格/不合格基準",
+          "required": ["overall_criteria", "exit_criteria"],
+          "properties": {
+            "overall_criteria": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["criterion", "threshold"],
+                "properties": {
+                  "criterion": { "type": "string" },
+                  "threshold": { "type": "string" },
+                  "mandatory": { "type": "boolean" }
+                }
+              }
+            },
+            "exit_criteria": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string" }
+            },
+            "suspension_criteria": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "resumption_criteria": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "deliverables": {
+          "type": "array",
+          "description": "成果物",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "format": { "type": "string" },
+              "due_date": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "description": "テスト環境",
+          "properties": {
+            "hardware": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "specification": { "type": "string" },
+                  "quantity": { "type": "integer" }
+                }
+              }
+            },
+            "software": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "version": { "type": "string" },
+                  "purpose": { "type": "string" }
+                }
+              }
+            },
+            "test_data": {
+              "type": "object",
+              "properties": {
+                "description": { "type": "string" },
+                "source": { "type": "string" },
+                "preparation_method": { "type": "string" }
+              }
+            }
+          }
+        },
+        "responsibilities": {
+          "type": "array",
+          "description": "役割と責任",
+          "items": {
+            "type": "object",
+            "required": ["role", "responsibilities"],
+            "properties": {
+              "role": { "type": "string" },
+              "name": { "type": "string" },
+              "responsibilities": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "schedule": {
+          "type": "object",
+          "description": "スケジュール",
+          "required": ["milestones"],
+          "properties": {
+            "start_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "milestones": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["name", "date"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "deliverables": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "risks": {
+          "type": "array",
+          "description": "リスクと対策",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "probability", "impact", "mitigation"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "probability": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              },
+              "impact": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical"]
+              },
+              "mitigation": { "type": "string" },
+              "contingency": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "test_design_specifications": {
+      "type": "array",
+      "description": "Test Design Specification (IEEE 829 Section 2)",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "feature", "approach", "test_case_ids"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^TDS-[0-9]{3}$",
+            "description": "テスト設計ID"
+          },
+          "feature": {
+            "type": "string",
+            "description": "対象機能"
+          },
+          "srs_references": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "関連SRS要件ID"
+          },
+          "approach": {
+            "type": "string",
+            "description": "テストアプローチ"
+          },
+          "test_techniques": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "equivalence_partitioning",
+                "boundary_value_analysis",
+                "decision_table",
+                "state_transition",
+                "use_case",
+                "exploratory",
+                "error_guessing"
+              ]
+            }
+          },
+          "pass_criteria": {
+            "type": "string"
+          },
+          "test_case_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "test_cases": {
+      "type": "array",
+      "description": "Test Cases (IEEE 829 Section 3)",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/test_case"
+      }
+    },
+    "test_procedures": {
+      "type": "array",
+      "description": "Test Procedures (IEEE 829 Section 4)",
+      "items": {
+        "type": "object",
+        "required": ["id", "purpose", "test_case_ids", "steps"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^TP-[0-9]{3}$",
+            "description": "テスト手順ID"
+          },
+          "purpose": { "type": "string" },
+          "test_case_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "special_requirements": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "setup": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["step_number", "action", "expected_result"],
+              "properties": {
+                "step_number": { "type": "integer" },
+                "action": { "type": "string" },
+                "input_data": { "type": "string" },
+                "expected_result": { "type": "string" },
+                "notes": { "type": "string" }
+              }
+            }
+          },
+          "teardown": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "traceability_matrix": {
+      "type": "array",
+      "description": "要件-テストケーストレーサビリティ",
+      "items": {
+        "type": "object",
+        "required": ["requirement_id", "test_case_ids"],
+        "properties": {
+          "requirement_id": {
+            "type": "string",
+            "description": "SRS要件ID"
+          },
+          "prd_requirement_id": {
+            "type": "string",
+            "description": "PRD要件ID"
+          },
+          "test_case_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "coverage_status": {
+            "type": "string",
+            "enum": ["not_covered", "partially_covered", "fully_covered"]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "test_case": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "objective",
+        "preconditions",
+        "test_steps",
+        "expected_results",
+        "priority"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^TC-[0-9]{4}$",
+          "description": "テストケースID"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 10
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 20,
+          "description": "テスト目的"
+        },
+        "srs_reference": {
+          "type": "string",
+          "description": "関連SRS要件ID"
+        },
+        "test_design_reference": {
+          "type": "string",
+          "description": "関連テスト設計ID"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "test_type": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "boundary",
+            "performance",
+            "security",
+            "usability"
+          ]
+        },
+        "automation_status": {
+          "type": "string",
+          "enum": ["automated", "manual", "to_be_automated"]
+        },
+        "preconditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "test_data": {
+          "type": "object",
+          "properties": {
+            "inputs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "value"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "value": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "setup_data": { "type": "string" }
+          }
+        },
+        "test_steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["step_number", "action"],
+            "properties": {
+              "step_number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "minLength": 5
+              },
+              "input": { "type": "string" },
+              "expected_result": { "type": "string" }
+            }
+          }
+        },
+        "expected_results": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "postconditions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cleanup": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" },
+        "execution_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["execution_date", "result", "executed_by"],
+            "properties": {
+              "execution_date": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "result": {
+                "type": "string",
+                "enum": ["pass", "fail", "blocked", "skipped"]
+              },
+              "executed_by": { "type": "string" },
+              "build_version": { "type": "string" },
+              "actual_results": { "type": "string" },
+              "defect_ids": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "notes": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

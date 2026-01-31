@@ -1,0 +1,677 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awesome-claude-skills/schemas/srs-ieee830.schema.json",
+  "title": "Software Requirements Specification (IEEE 830)",
+  "description": "IEEE 830準拠のソフトウェア要求仕様書スキーマ",
+  "type": "object",
+  "required": [
+    "metadata",
+    "introduction",
+    "overall_description",
+    "specific_requirements"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "ドキュメントメタデータ",
+      "required": ["document_id", "title", "version", "status", "created_date", "author"],
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "pattern": "^SRS-[0-9]{4}-[0-9]{3}$",
+          "description": "ドキュメントID (例: SRS-2024-001)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review", "approved", "baseline", "deprecated"]
+        },
+        "created_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date"
+        },
+        "author": { "type": "string" },
+        "organization": { "type": "string" },
+        "related_prd": {
+          "type": "string",
+          "description": "関連するPRDのID"
+        },
+        "reviewers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approvers": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "introduction": {
+      "type": "object",
+      "description": "1. はじめに (IEEE 830 Section 1)",
+      "required": ["purpose", "scope", "definitions", "references", "overview"],
+      "properties": {
+        "purpose": {
+          "type": "object",
+          "description": "1.1 目的",
+          "required": ["description", "intended_audience"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 50,
+              "description": "このSRSの目的"
+            },
+            "intended_audience": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "description": "対象読者"
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "description": "1.2 スコープ",
+          "required": ["product_name", "product_description", "benefits", "objectives"],
+          "properties": {
+            "product_name": { "type": "string" },
+            "product_description": {
+              "type": "string",
+              "minLength": 50
+            },
+            "benefits": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "objectives": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "exclusions": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "スコープ外の項目"
+            }
+          }
+        },
+        "definitions": {
+          "type": "array",
+          "description": "1.3 定義・略語",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["term", "definition"],
+            "properties": {
+              "term": { "type": "string" },
+              "definition": { "type": "string" },
+              "acronym": { "type": "string" }
+            }
+          }
+        },
+        "references": {
+          "type": "array",
+          "description": "1.4 参考文献",
+          "items": {
+            "type": "object",
+            "required": ["id", "title"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "version": { "type": "string" },
+              "date": { "type": "string", "format": "date" },
+              "source": { "type": "string" }
+            }
+          }
+        },
+        "overview": {
+          "type": "string",
+          "description": "1.5 概要",
+          "minLength": 100
+        }
+      }
+    },
+    "overall_description": {
+      "type": "object",
+      "description": "2. 全体説明 (IEEE 830 Section 2)",
+      "required": [
+        "product_perspective",
+        "product_functions",
+        "user_characteristics",
+        "constraints",
+        "assumptions_dependencies"
+      ],
+      "properties": {
+        "product_perspective": {
+          "type": "object",
+          "description": "2.1 製品の位置づけ",
+          "required": ["system_context"],
+          "properties": {
+            "system_context": {
+              "type": "string",
+              "minLength": 50,
+              "description": "システムの全体像における位置づけ"
+            },
+            "system_interfaces": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interface"
+              },
+              "description": "システムインターフェース"
+            },
+            "user_interfaces": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interface"
+              },
+              "description": "ユーザーインターフェース"
+            },
+            "hardware_interfaces": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interface"
+              },
+              "description": "ハードウェアインターフェース"
+            },
+            "software_interfaces": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interface"
+              },
+              "description": "ソフトウェアインターフェース"
+            },
+            "communication_interfaces": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interface"
+              },
+              "description": "通信インターフェース"
+            },
+            "memory_constraints": { "type": "string" },
+            "operations": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "運用モード"
+            },
+            "site_adaptation": { "type": "string" }
+          }
+        },
+        "product_functions": {
+          "type": "array",
+          "description": "2.2 製品機能の概要",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "description"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "priority": {
+                "type": "string",
+                "enum": ["essential", "desirable", "optional"]
+              }
+            }
+          }
+        },
+        "user_characteristics": {
+          "type": "array",
+          "description": "2.3 ユーザー特性",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["user_class", "description"],
+            "properties": {
+              "user_class": { "type": "string" },
+              "description": { "type": "string" },
+              "education_level": { "type": "string" },
+              "experience": { "type": "string" },
+              "technical_expertise": {
+                "type": "string",
+                "enum": ["novice", "intermediate", "expert"]
+              },
+              "frequency_of_use": { "type": "string" }
+            }
+          }
+        },
+        "constraints": {
+          "type": "object",
+          "description": "2.4 制約条件",
+          "properties": {
+            "regulatory": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "規制・法的制約"
+            },
+            "hardware": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "ハードウェア制約"
+            },
+            "software": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "ソフトウェア制約"
+            },
+            "security": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "セキュリティ制約"
+            },
+            "other": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "その他の制約"
+            }
+          }
+        },
+        "assumptions_dependencies": {
+          "type": "object",
+          "description": "2.5 前提条件と依存関係",
+          "required": ["assumptions"],
+          "properties": {
+            "assumptions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["id", "description"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "risk_if_false": { "type": "string" }
+                }
+              }
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "description"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "type": {
+                    "type": "string",
+                    "enum": ["technical", "organizational", "external"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "apportioning_requirements": {
+          "type": "string",
+          "description": "2.6 要件の配分（将来バージョンへの配分）"
+        }
+      }
+    },
+    "specific_requirements": {
+      "type": "object",
+      "description": "3. 詳細要件 (IEEE 830 Section 3)",
+      "required": ["functional_requirements"],
+      "properties": {
+        "external_interfaces": {
+          "type": "object",
+          "description": "3.1 外部インターフェース要件",
+          "properties": {
+            "user_interfaces": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/interface_requirement" }
+            },
+            "hardware_interfaces": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/interface_requirement" }
+            },
+            "software_interfaces": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/interface_requirement" }
+            },
+            "communication_interfaces": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/interface_requirement" }
+            }
+          }
+        },
+        "functional_requirements": {
+          "type": "array",
+          "description": "3.2 機能要件",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/functional_requirement"
+          }
+        },
+        "performance_requirements": {
+          "type": "array",
+          "description": "3.3 性能要件",
+          "items": {
+            "$ref": "#/$defs/non_functional_requirement"
+          }
+        },
+        "logical_database_requirements": {
+          "type": "object",
+          "description": "3.4 論理データベース要件",
+          "properties": {
+            "data_entities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "description", "attributes"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "attributes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["name", "type"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "type": { "type": "string" },
+                        "constraints": { "type": "string" }
+                      }
+                    }
+                  },
+                  "relationships": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "data_retention": { "type": "string" },
+            "data_integrity": { "type": "string" }
+          }
+        },
+        "design_constraints": {
+          "type": "array",
+          "description": "3.5 設計制約",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "rationale"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "rationale": { "type": "string" },
+              "source": { "type": "string" }
+            }
+          }
+        },
+        "software_system_attributes": {
+          "type": "object",
+          "description": "3.6 ソフトウェアシステム属性",
+          "properties": {
+            "reliability": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/non_functional_requirement" }
+            },
+            "availability": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/non_functional_requirement" }
+            },
+            "security": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/non_functional_requirement" }
+            },
+            "maintainability": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/non_functional_requirement" }
+            },
+            "portability": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/non_functional_requirement" }
+            }
+          }
+        },
+        "other_requirements": {
+          "type": "array",
+          "description": "3.7 その他の要件",
+          "items": {
+            "$ref": "#/$defs/non_functional_requirement"
+          }
+        }
+      }
+    },
+    "appendices": {
+      "type": "object",
+      "description": "付録",
+      "properties": {
+        "analysis_models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["use_case", "sequence", "class", "state", "activity", "er"]
+              },
+              "description": { "type": "string" },
+              "diagram_ref": { "type": "string" }
+            }
+          }
+        },
+        "to_be_determined": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "target_resolution_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "owner": { "type": "string" }
+            }
+          },
+          "description": "TBD (未決定事項)"
+        },
+        "revision_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["version", "date", "author", "changes"],
+            "properties": {
+              "version": { "type": "string" },
+              "date": { "type": "string", "format": "date" },
+              "author": { "type": "string" },
+              "changes": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "traceability_matrix": {
+      "type": "array",
+      "description": "トレーサビリティマトリクス",
+      "items": {
+        "type": "object",
+        "required": ["requirement_id", "source"],
+        "properties": {
+          "requirement_id": { "type": "string" },
+          "source": {
+            "type": "string",
+            "description": "PRD要件ID等"
+          },
+          "design_element": { "type": "string" },
+          "test_case_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["not_started", "in_progress", "implemented", "verified"]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "interface": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "protocol": { "type": "string" },
+        "data_format": { "type": "string" }
+      }
+    },
+    "interface_requirement": {
+      "type": "object",
+      "required": ["id", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^IR-[0-9]{3}$"
+        },
+        "description": { "type": "string" },
+        "source": { "type": "string" },
+        "priority": {
+          "type": "string",
+          "enum": ["essential", "desirable", "optional"]
+        }
+      }
+    },
+    "functional_requirement": {
+      "type": "object",
+      "required": ["id", "name", "description", "priority", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^SRS-FR-[0-9]{3}$",
+          "description": "機能要件ID"
+        },
+        "name": { "type": "string" },
+        "description": {
+          "type": "string",
+          "minLength": 20
+        },
+        "rationale": { "type": "string" },
+        "source": {
+          "type": "string",
+          "description": "要件の出典 (PRD ID等)"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["essential", "desirable", "optional"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["proposed", "approved", "implemented", "verified", "deferred", "deleted"]
+        },
+        "stability": {
+          "type": "string",
+          "enum": ["stable", "unstable"],
+          "description": "要件の安定性"
+        },
+        "verification_method": {
+          "type": "string",
+          "enum": ["test", "inspection", "demonstration", "analysis"]
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "constraints": { "type": "string" }
+            }
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "processing": {
+          "type": "string",
+          "description": "処理ロジックの説明"
+        },
+        "preconditions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "postconditions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition": { "type": "string" },
+              "action": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "non_functional_requirement": {
+      "type": "object",
+      "required": ["id", "category", "description", "metric", "target"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^SRS-NFR-[0-9]{3}$",
+          "description": "非機能要件ID"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "performance",
+            "reliability",
+            "availability",
+            "security",
+            "maintainability",
+            "portability",
+            "usability",
+            "scalability"
+          ]
+        },
+        "description": { "type": "string" },
+        "rationale": { "type": "string" },
+        "metric": {
+          "type": "string",
+          "description": "測定指標"
+        },
+        "target": {
+          "type": "string",
+          "description": "目標値"
+        },
+        "current_value": {
+          "type": "string",
+          "description": "現在値"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["essential", "desirable", "optional"]
+        },
+        "verification_method": {
+          "type": "string",
+          "enum": ["test", "inspection", "demonstration", "analysis"]
+        }
+      }
+    }
+  }
+}

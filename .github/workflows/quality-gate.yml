@@ -1,0 +1,294 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # ============================================================
+  # Gate 1: Tests
+  # ============================================================
+  test-python:
+    name: "Gate 1: Tests (Python)"
+    runs-on: ubuntu-latest
+    if: hashFiles('pyproject.toml') != '' || hashFiles('requirements.txt') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e .; fi
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-python
+          path: coverage.xml
+
+  test-javascript:
+    name: "Gate 1: Tests (JavaScript)"
+    runs-on: ubuntu-latest
+    if: hashFiles('package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage --coverageThreshold='{"global":{"lines":80,"branches":70}}'
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-javascript
+          path: coverage/
+
+  # ============================================================
+  # Gate 2: Code Quality
+  # ============================================================
+  quality-python:
+    name: "Gate 2: Code Quality (Python)"
+    runs-on: ubuntu-latest
+    if: hashFiles('pyproject.toml') != '' || hashFiles('requirements.txt') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install tools
+        run: |
+          pip install ruff mypy
+
+      - name: Run Ruff (lint)
+        run: ruff check .
+
+      - name: Run Ruff (format check)
+        run: ruff format --check .
+
+      - name: Run mypy (type check)
+        run: mypy . --ignore-missing-imports
+        continue-on-error: true  # Optional for initial setup
+
+  quality-javascript:
+    name: "Gate 2: Code Quality (JavaScript)"
+    runs-on: ubuntu-latest
+    if: hashFiles('package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --if-present
+
+      - name: Run Prettier check
+        run: npm run format:check --if-present
+
+      - name: Run TypeScript check
+        run: npm run typecheck --if-present
+
+  # ============================================================
+  # Gate 3: Security
+  # ============================================================
+  security-python:
+    name: "Gate 3: Security (Python)"
+    runs-on: ubuntu-latest
+    if: hashFiles('pyproject.toml') != '' || hashFiles('requirements.txt') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install bandit pip-audit
+
+      - name: Run Bandit (SAST)
+        run: bandit -r . -ll --exclude ./.venv,./tests
+        continue-on-error: true
+
+      - name: Run pip-audit
+        run: |
+          if [ -f requirements.txt ]; then pip-audit -r requirements.txt; fi
+        continue-on-error: true
+
+  security-javascript:
+    name: "Gate 3: Security (JavaScript)"
+    runs-on: ubuntu-latest
+    if: hashFiles('package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  secret-detection:
+    name: "Gate 3: Secret Detection"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  # ============================================================
+  # Gate 5: Documentation
+  # ============================================================
+  documentation-validation:
+    name: "Gate 5: Documentation"
+    runs-on: ubuntu-latest
+    if: hashFiles('docs/*.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Validate PRD
+        if: hashFiles('docs/prd.json') != ''
+        run: |
+          python scripts/validate-documents.py --prd docs/prd.json
+        continue-on-error: true
+
+      - name: Validate SRS
+        if: hashFiles('docs/srs.json') != ''
+        run: |
+          python scripts/validate-documents.py --srs docs/srs.json
+        continue-on-error: true
+
+      - name: Validate Test Spec
+        if: hashFiles('docs/test-spec.json') != ''
+        run: |
+          python scripts/validate-documents.py --test docs/test-spec.json
+        continue-on-error: true
+
+      - name: Validate Traceability
+        if: hashFiles('docs/prd.json') != '' && hashFiles('docs/srs.json') != '' && hashFiles('docs/test-spec.json') != ''
+        run: |
+          python scripts/validate-documents.py \
+            --prd docs/prd.json \
+            --srs docs/srs.json \
+            --test docs/test-spec.json \
+            --traceability
+
+      - name: Generate Documentation Report
+        if: always()
+        run: |
+          echo "## Documentation Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f docs/prd.json ]; then
+            echo "- PRD: Found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- PRD: Not found (optional)" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f docs/srs.json ]; then
+            echo "- SRS: Found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- SRS: Not found (optional)" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f docs/test-spec.json ]; then
+            echo "- Test Spec: Found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Test Spec: Not found (optional)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================
+  # Gate Summary
+  # ============================================================
+  quality-gate-summary:
+    name: "Quality Gate Summary"
+    runs-on: ubuntu-latest
+    needs:
+      - test-python
+      - test-javascript
+      - quality-python
+      - quality-javascript
+      - security-python
+      - security-javascript
+      - secret-detection
+      - documentation-validation
+    if: always()
+    steps:
+      - name: Check Gate Results
+        run: |
+          echo "## Quality Gate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate 1: Tests | ${{ needs.test-python.result == 'success' || needs.test-javascript.result == 'success' && '✅ Pass' || '⚠️ Check' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate 2: Quality | ${{ needs.quality-python.result == 'success' || needs.quality-javascript.result == 'success' && '✅ Pass' || '⚠️ Check' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate 3: Security | ${{ needs.security-python.result == 'success' || needs.security-javascript.result == 'success' && '✅ Pass' || '⚠️ Check' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate 5: Documentation | ${{ needs.documentation-validation.result == 'success' && '✅ Pass' || needs.documentation-validation.result == 'skipped' && '⏭️ Skipped' || '⚠️ Check' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Required for Merge" >> $GITHUB_STEP_SUMMARY
+          echo "- Gate 4: Code Review (2+ approvals)" >> $GITHUB_STEP_SUMMARY
+          echo "- Gate 5: Documentation validation (if docs/*.json exists)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Gate Status
+        if: |
+          needs.test-python.result == 'failure' ||
+          needs.test-javascript.result == 'failure' ||
+          needs.quality-python.result == 'failure' ||
+          needs.quality-javascript.result == 'failure' ||
+          needs.documentation-validation.result == 'failure'
+        run: |
+          echo "❌ Quality Gate Failed - Please fix the issues above"
+          exit 1
