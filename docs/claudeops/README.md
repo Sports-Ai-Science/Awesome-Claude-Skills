@@ -15,7 +15,6 @@ ClaudeOps
 │
 ├── CDD (Claude Delegated Development)
 │   └── Claude Code固有のプラクティス
-│       Origin: Boris Cherny (@bcherny) - Anthropic
 │
 └── Methodologies (Claude × 既存流派)
     ├── Claude TDD
@@ -93,4 +92,3 @@ CLAUDE.md + Skills = チームの資産
 ## 関連リンク
 
 - [Claude Code Docs](https://docs.anthropic.com/claude-code)
-- [Boris Cherny (@bcherny)](https://x.com/bcherny)

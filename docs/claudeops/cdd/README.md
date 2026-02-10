@@ -1,14 +1,10 @@
 # CDD - Claude Delegated Development
 
-**Cherny Method**
-
-> Origin: Boris Cherny (@bcherny) - Anthropic Claude Code Team
->
-> Source: https://x.com/bcherny (2025)
+> Anthropic Claude Code チームのプラクティスに基づく
 
 ## 概要
 
-CDD (Claude Delegated Development) は、Claude Codeチームが実践する開発手法です。
+CDD (Claude Delegated Development) は、Claude Codeを活用した開発手法です。
 
 **核心: 「Don't micromanage how」— 信頼して委任する**
 
@@ -239,8 +235,3 @@ $ cd .claude/worktrees/feature-a && claude
 - [Claude Code Docs](https://docs.anthropic.com/claude-code)
 - [Slack MCP Integration](https://github.com/korotovsky/slack-mcp-server)
 - [Ghostty Terminal](https://ghostty.org/)
-
-## Credits
-
-- Boris Cherny (@bcherny) - Anthropic
-- Bob Sheth (@bobsheth) - セッション自動評価のアイデア
