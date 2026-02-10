@@ -1,12 +1,32 @@
-# Claude Code Power User Tips
+# CDD - Claude Delegated Development
 
-> Boris Cherny (@bcherny) - Anthropic Claude Code チームからのTips
+**Cherny Method**
+
+> Origin: Boris Cherny (@bcherny) - Anthropic Claude Code Team
 >
-> Source: https://x.com/bcherny (2025年投稿)
+> Source: https://x.com/bcherny (2025)
 
 ## 概要
 
-Claude Codeを最大限活用するための10のTipsをまとめています。
+CDD (Claude Delegated Development) は、Claude Codeチームが実践する開発手法です。
+
+**核心: 「Don't micromanage how」— 信頼して委任する**
+
+```
+従来の開発:     人間が「考えて」「作業する」
+CDD:           人間が「指示して」「確認する」
+```
+
+## 4つの原則
+
+| 原則 | 内容 |
+|------|------|
+| **委任** | URLを渡して "fix" だけ言う |
+| **並列** | 複数セッション/サブエージェントで分散 |
+| **蓄積** | CLAUDE.md, Skills で知識を資産化 |
+| **監督** | 人間はレビュアーに徹する |
+
+## 10のプラクティス
 
 ## クイックリファレンス
 
